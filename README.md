@@ -48,8 +48,8 @@
 
  Config details - 
  
- Driver Class:	org.h2.Driver
- JDBC URL: jdbc:h2:mem:testdb
- User Name: sa
- Password : <empty>
+ Driver Class:	org.h2.Driver <br/>
+ JDBC URL: jdbc:h2:mem:testdb  <br/>
+ User Name: sa  <br/>
+ Password : <empty>  <br/>
     
