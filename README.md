@@ -1,6 +1,6 @@
-** Rest service to read csv data and store it to database **
+**Rest service to read csv data and store it to database**
 
-** prerequisite **
+**prerequisite**
 
 - java8 or higher
 - spring boot 2
@@ -11,7 +11,7 @@
 - postman (to test endpoints) or you can use swagger url
 
 
-** Run from application framework **
+**Run from application framework**
  
  a. Git clone -> https://github.com/shadabkhan151/csvreader-service.git <br/>
  b. Import application as maven project in intellij framework, it will take some time to install dependency <br/>
@@ -25,7 +25,7 @@
  
  
  
- ** Run by docker build and run **
+ **Run by docker build and run**
  
  from command line go to path where Dockerfile available and run following command <br/>
  
@@ -37,7 +37,7 @@
    Now, service available to use or test
    
    
- ** Run with existing docker image on docker hub **
+ **Run with existing docker image on docker hub**
     
     > docker run -d -p 8081:8080 shadabkhan1407/shkhan:csvservice_v1
     
