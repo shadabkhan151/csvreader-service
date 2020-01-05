@@ -45,3 +45,6 @@
     
     
  Also, use http://localhost:8080/readnstore/h2/ to test data (using in-memory H2 database)
+
+ Config details - 
+    
