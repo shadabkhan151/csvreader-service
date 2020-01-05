@@ -42,3 +42,6 @@
     > docker run -d -p 8081:8080 shadabkhan1407/shkhan:csvservice_v1
     
     Above command will fetch docker image in your local environment and run image
+    
+    
+ Also, use http://localhost:8080/readnstore/h2/ to test data (using in-memory H2 database)
