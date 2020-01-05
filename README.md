@@ -47,4 +47,9 @@
  Also, use http://localhost:8080/readnstore/h2/ to test data (using in-memory H2 database)
 
  Config details - 
+ 
+ Driver Class:	org.h2.Driver
+ JDBC URL: jdbc:h2:mem:testdb
+ User Name: sa
+ Password : <empty>
     
