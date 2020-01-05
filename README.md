@@ -1,4 +1,4 @@
-**Rest service to read csv data and store it to database
+** Rest service to read csv data and store it to database
 
 ** prerequisite
 
