@@ -1,0 +1,101 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  # Insert Your Project Name
+  PROJECT_NAME: csvreader
+  ###########
+  # SYSTEM VARIABLES
+  ###########
+  # A temporary Tag used when building the Docker Image.
+  AWS_ECR_IMAGE_TAG: csvreaderv1.0
+
+#Stage: Build
+# The purpose of this job is to Build then Push your Docker Image to ECR
+# This Job will search ECR to see if the image already exists.
+# If the image exists it will tag it with the current branch, conducting promotion
+# Else the image will be built, tagged, and pushed to ECR.
+
+image_build:
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - export DOCKER_HOST="tcp://0.0.0.0:2375"
+    - $(aws ecr get-login --region us-east-1 --no-include-email)
+    - echo $HELM_VERSION
+    - echo $AWS_REGION
+    - echo $AWS_IMAGE_REPO
+    - echo $CI_COMMIT_REF_NAME
+    - echo $AWS_ECR_IMAGE_TAG
+    - echo $AWS_ECR_REPO_PATH
+    - echo $CI_COMMIT_TAG
+    - apk add python python-dev py-pip
+    #   #install aws cli for login and push images
+    - pip install awscli
+    - $(aws ecr get-login --region us-east-1 --no-include-email)
+    - docker --version
+  script:
+    - echo 'Current Commit Sha'
+    - echo ${CI_COMMIT_SHA:0:8}
+    - SHA_TAG=${CI_COMMIT_SHA:0:8}
+    - echo ${SHA_TAG}
+    - echo 'Searching ECR for Image'
+    - (if aws ecr describe-images --repository-name ${AWS_ECR_REPO_NAME} --region ${AWS_REGION} --image-ids imageTag=${PROJECT_NAME}-${CI_COMMIT_SHA:0:8} ; then
+      echo "Image exists"
+      && echo "Ready to Build Image Tag ${PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}"
+      && MANIFEST=$(aws ecr batch-get-image --repository-name ${AWS_ECR_REPO_NAME} --region ${AWS_REGION} --image-ids imageTag=${PROJECT_NAME}-${CI_COMMIT_SHA:0:8} --query images[].imageManifest --output text)
+      && aws ecr put-image --repository-name ${AWS_ECR_REPO_NAME} --region ${AWS_REGION} --image-tag ${PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8} --image-manifest "$MANIFEST";
+      else
+      echo "Image does not exist, building it"
+      && docker build -f Dockerfile -t ${AWS_ECR_REPO_NAME}:${AWS_ECR_IMAGE_TAG} .
+      && docker tag ${AWS_ECR_REPO_NAME}:${AWS_ECR_IMAGE_TAG} ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_SHA:0:8}
+      && docker tag ${AWS_ECR_REPO_NAME}:${AWS_ECR_IMAGE_TAG} ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}
+      && docker push ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}
+      && docker push ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_SHA:0:8} ;
+      (if [ "${CI_COMMIT_TAG}" == "" ]; then
+      echo "No Git Tag";
+      else
+      docker --version
+      docker tag ${AWS_ECR_REPO_NAME}:${AWS_ECR_IMAGE_TAG} ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_TAG}
+      && docker push ${AWS_ECR_REPO_PATH}/${AWS_ECR_REPO_NAME}:${PROJECT_NAME}-${CI_COMMIT_TAG};
+      fi);
+      fi);
+  environment:
+    name: ${CI_COMMIT_REF_NAME}
+  only:
+    - develop
+    - master
+  tags:
+    - cloud-runner
+
+# Staging Deploy
+# The Purpose of this job is to deploy your image to the Kubernetes Staging
+# Cluster.
+# In this section you will need to set any environment variables that are specific
+# to Staging, and not set in your charts value.yaml.
+staging_deploy:
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - $(aws ecr get-login --region ${AWS_REGION} --no-include-email)
+  script:
+    - echo $KUBECONFIG
+    - echo 'Deploying image to Production...'
+    - echo  ${PROJECT_NAME}
+    - IMAGE_TAG=${PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}
+    - echo "The Image Tag to be Deployed is ${IMAGE_TAG}"
+    - helm upgrade ${PROJECT_NAME} ./chart/demo --install
+      --namespace="demo"
+      --set image.tag=${IMAGE_TAG}
+      --set ingress.hosts[0]=demo.test.com
+      --values ./chart/demo/values.yaml
+      --debug
+  environment:
+    name: production
+  only:
+    - master
+  tags:
+    - cloud-runner

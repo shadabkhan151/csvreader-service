@@ -1,0 +1,12 @@
+version: '3'
+services:
+  frontend:
+    image: "t:t"
+    ports:
+      - "8081:8080"
+    environment:
+      - VUE_APP_BACKEND_SERVICE=${VUE_APP_BACKEND_SERVICE}
+  backend:
+    image: "shadabkhan1407/shkhan:csvservice_v1"
+    ports:
+      - "8083:8080"

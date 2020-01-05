@@ -1,0 +1,22 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  repository: <aws-repo-path>/<repo_name>
+  tag:
+  pullSecret: regsecret
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  externalPort: 8080
+  internalPort: 8080
+  name: csvreader
+ingress:
+  enabled: true
+  hosts:
+    - demo.test.com
+  annotations:
+    stable.k8s.msts/autocert: Yes please.
+  tls:
+    - secretName: <secret value>
