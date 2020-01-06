@@ -13,7 +13,7 @@ COPY pom.xml /build
 COPY src /build/src
 
 # Build application
-RUN mvn -Dmaven.test.skip=true package
+RUN mvn package
 
 
 FROM openjdk:11-slim as runtime
@@ -34,6 +34,6 @@ VOLUME $APP_HOME/config
 
 WORKDIR $APP_HOME
 #Copy executable jar file from the builder image
-COPY --from=builder /build/target/*.jar tollseuContentService.jar
+COPY --from=builder /build/target/*.jar csvreader.jar
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar tollseuContentService.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar csvreader.jar" ]
