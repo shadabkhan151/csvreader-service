@@ -19,7 +19,7 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.csv.route.v1"))
+                .apis(RequestHandlerSelectors.basePackage("com.demo.route.v1"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());
